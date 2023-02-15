@@ -269,3 +269,31 @@ The batch size is limited by configuration (in bytes).
 
 ## 6. Consuming Messages with Kafka Consumers and Consumer Groups
 
+![Consumer Internals](./images/consumer_internals.png)
+
+### Subscribe
+
+A single consumer can subscribe to any number of topics. However calls to `subscribe()` are **not** incremental: every subsequent call will override the previous list of topics that the consumer was subscribed to. With `subscribe()` the consumer is asking for automatic/dynamic partition assignment - the consumer pulls from every partition within that topic. Use `assign()` if you need to subscribe to a specific partition (advanced case).
+
+```java
+KafkaConsumer myConsumer = new KafkaConsumer(props);
+myConsumer.subscribe(List.of("my-topic"));
+```
+
+Supports RegEx:
+
+```java
+KafkaConsumer myConsumer = new KafkaConsumer(props);
+myConsumer.subscribe("my*"));
+```
+
+![Topic Subscription](./images/topic_subscription.png)
+
+**Note:** A consumer can't `unsubscribe` from an individual topic. When the `unsubscribe()` method is called the consumer unsubscribes from all topics. It is the equivalent of calling `subscribe(emptyList())`.
+
+### Poll
+
+Calling the `poll()` method makes the consumer start continuously polling the brokers for data (messages). Needs to be called in a loop (e.g. `while(true)`).
+
+
+
