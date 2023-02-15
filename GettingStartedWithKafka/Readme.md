@@ -255,5 +255,17 @@ Downside:
 
 ![Micro-batching](./images/micro-batching.png)
 
+The batch size is limited by configuration (in bytes).
+
+![Message Buffering](./images/message_buffering.png)
+
+### Delivery Guarantee
+
+![Delivery Guarantee](./images/delivery_guarantee.png)
+
+### Ordering Guarantee
+
+![Ordering Guarantee](./images/ordering_guarantee.png)
+
 ## 6. Consuming Messages with Kafka Consumers and Consumer Groups
 
