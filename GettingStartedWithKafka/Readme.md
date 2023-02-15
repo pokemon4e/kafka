@@ -26,7 +26,7 @@ Rapidly moving large amount of data from one place to another (data movement).
 
 Challenges:
 
-- **Limited scalability:** the message broker is often times the bottleneck
+- **Limited scalability:** the message broker is often the bottleneck
 - **Message size** affects performance
 - **Consumer rate** determines performance
 - **Fault-tolerance** is challenging. If consumer loses the message is difficult to reprocess
@@ -201,9 +201,59 @@ When ISR (In-Sync Replicas) equals the replication factor we can say the partiti
 
 ![Producer Internals](./images/producer_internals.png)
 
+The Producer doesn't connect to every broker referenced in the `bootstrap.servers`, just the first available one. It uses the broker it connects to for discovering the full membership of the cluster. This is to determine the parititon owners (e.g leader). This way it can send the message directly to the leader.
+
+*Good practice:* provide more than one broker in the `bootstrap.servers` list in the unlikely event that the first broker is unavailable.
+
 *Note:* KafkaProducer can only send ProducerRecords that match the key and value serializers types it is configured with.
 
-If set the key can determine what partitions the message will be written to. However, it might add overhead depending on the serializer.
+### ProducerRecord
+
+Properties:
+
+Only `topic` and `value` are required.
+
+```java
+class ProducerRecord {
+    final String topic;
+    final String value;
+
+    String partition; // specific partition within the topic to send ProducerRecords
+    String timestamp;
+    String key;
+}
+```
+
+### Key
+
+If set the `key` can determine what partitions the message will be written to. However, it might add overhead depending on the serializer.
+
+Purposes:
+
+- Additional information in the message
+- Can determine what partitions the message will be written to
+
+Downside:
+
+- Additional overhead
+- Depends on the serializer type
+
+### Sending Messages
+
+1. Producer reaches out to the cluster using the `bootstrap.servers` to discover cluster membership
+2. Broker responds with metadata containing information about topics, their partitions and their managing brokers.
+3. Throughout the producer's lifecycle, it will keep refreshing the metadata object.
+4. Pass the message (`value`) through the configured Serializer.
+5. The partitioner determines what partition to send the record to (different partitioning strategies are available).
+6. Dispatch the record to the RecordAccumulator (in-memory queue-like data structure). This results in micro-batching of TopicPartition combinations in order to reduce the overhead.
+
+### Partitioning Strategy
+
+![Partitioning Strategy](./images/partition_strategy.png)
+
+### Micro-batching
+
+![Micro-batching](./images/micro-batching.png)
 
 ## 6. Consuming Messages with Kafka Consumers and Consumer Groups
 
