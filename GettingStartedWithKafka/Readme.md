@@ -295,5 +295,8 @@ myConsumer.subscribe("my*"));
 
 Calling the `poll()` method makes the consumer start continuously polling the brokers for data (messages). Needs to be called in a loop (e.g. `while(true)`).
 
+![Consumer Polling](./images/consumer_polling.png)
+
+
 
 
